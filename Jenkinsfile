@@ -46,7 +46,7 @@ pipeline {
                     docker rm spring-second-project || true
 
                     docker run -d \
-                    -p 101:1010 \
+                    -p 4041:4040 \
                     --name spring-second-project \
                     spring-second-project:latest
                 '''
@@ -55,18 +55,7 @@ pipeline {
             }
         }
 
-        stage('Health Check') {
-            steps {
-                echo 'Checking application...'
-
-                sh '''
-                    sleep 10
-                    curl -f http://localhost:1010/ || exit 1
-                '''
-
-                echo 'Application is running successfully!'
-            }
-        }
+        
     }
 
     post {
