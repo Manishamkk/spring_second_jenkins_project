@@ -22,7 +22,29 @@ pipeline {
             }
         }
         
-      
+       stage('Docker Build') {
+    steps {
+        echo 'Building Docker Image...'
+
+        sh 'docker build -t spring-first-project:latest .'
+
+        echo 'Docker Build stage successful!'
+    }
+}
+
+stage('Docker Run') {
+    steps {
+        echo 'Starting Docker Container...'
+
+        sh '''
+            docker stop spring-first-project || true
+            docker rm spring-first-project || true
+            docker run -d -p 1010:1010 --name spring-first-project spring-first-project:latest
+        '''
+
+        echo 'Docker Container started successfully!'
+    }
+}
 
     }
 
