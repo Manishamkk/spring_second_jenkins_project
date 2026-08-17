@@ -46,9 +46,9 @@ pipeline {
                     docker rm spring-second-project || true
 
                     docker run -d \
-                    -p 1011:1010 \
-                    --name spring-second-project \
-                    spring-second-project:latest
+                        -p 1011:1010 \
+                        --name spring-second-project \
+                        spring-second-project:latest
                 '''
 
                 echo 'Docker container started successfully!'
@@ -61,7 +61,7 @@ pipeline {
 
                 sh '''
                     sleep 10
-                    curl -f http://localhost:1010/ || exit 1
+                    curl -f http://localhost:1011/ || exit 1
                 '''
 
                 echo 'Application is running successfully!'
