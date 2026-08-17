@@ -10,6 +10,8 @@ pipeline {
 
         stage('Checkout') {
             steps {
+                echo 'Checking out source code from GitHub...'
+
                 git branch: 'main',
                     url: 'https://github.com/Manishamkk/spring_second_jenkins_project.git'
             }
@@ -17,44 +19,63 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building Spring Boot Second Application...'
+                echo 'Building Spring Boot application...'
+
                 sh 'mvn clean package -DskipTests'
+
+                echo 'Maven build successful!'
             }
         }
-        
-       stage('Docker Build') {
-    steps {
-        echo 'Building Docker Image...'
 
-        sh 'docker build -t spring-first-project:latest .'
+        stage('Docker Build') {
+            steps {
+                echo 'Building Docker image...'
 
-        echo 'Docker Build stage successful!'
-    }
-}
+                sh 'docker build -t spring-second-project:latest .'
 
-stage('Docker Run') {
-    steps {
-        echo 'Starting Docker Container...'
+                echo 'Docker image created successfully!'
+            }
+        }
 
-        sh '''
-            docker stop spring-first-project || true
-            docker rm spring-first-project || true
-            docker run -d -p 1010:1010 --name spring-first-project spring-first-project:latest
-        '''
+        stage('Docker Run') {
+            steps {
+                echo 'Starting Docker container...'
 
-        echo 'Docker Container started successfully!'
-    }
-}
+                sh '''
+                    docker stop spring-second-project || true
+                    docker rm spring-second-project || true
 
+                    docker run -d \
+                    -p 1011:1010 \
+                    --name spring-second-project \
+                    spring-second-project:latest
+                '''
+
+                echo 'Docker container started successfully!'
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo 'Checking application...'
+
+                sh '''
+                    sleep 10
+                    curl -f http://localhost:1010/ || exit 1
+                '''
+
+                echo 'Application is running successfully!'
+            }
+        }
     }
 
     post {
         success {
-            echo 'Build spring second applicationsuccessful!'
+            echo 'Spring Boot Second Project deployed successfully!'
         }
 
         failure {
-            echo 'Build spring second application failed!'
+            echo 'Spring Boot Second Project deployment failed!'
         }
     }
 }
