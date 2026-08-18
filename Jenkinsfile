@@ -5,7 +5,7 @@ pipeline {
     tools {
         maven 'maven'
     }
-    
+
     environment {
         GIT_TAG = "v1.0.${BUILD_NUMBER}"
     }
@@ -20,7 +20,7 @@ pipeline {
                     url: 'https://github.com/Manishamkk/spring_second_jenkins_project.git'
             }
         }
-        
+
         stage('Git Tag') {
             steps {
                 echo "Creating Git tag: ${GIT_TAG}"
@@ -52,8 +52,11 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
 
-                sh 'docker build -t spring-second-project:${GIT_TAG} .'
-                docker tag spring-second-project:${GIT_TAG} spring-second-project:latest
+                sh '''
+                    docker build -t spring-second-project:${GIT_TAG} .
+                    docker tag spring-second-project:${GIT_TAG} spring-second-project:latest
+                '''
+
                 echo 'Docker image created successfully!'
             }
         }
@@ -64,26 +67,26 @@ pipeline {
 
                 sh '''
                     docker stop spring-second-project || true
+
                     docker rm spring-second-project || true
 
                     docker run -d \
-                    -p 4041:4040 \
-                    --name spring-second-project \
-                    spring-second-project:${GIT_TAG}
+                        -p 4041:4040 \
+                        --name spring-second-project \
+                        spring-second-project:${GIT_TAG}
                 '''
 
                 echo 'Docker container started successfully!'
             }
         }
-
-        
     }
 
     post {
+
         success {
-             echo 'Spring Boot Second Project deployed successfully!'
-             echo "Git Tag: ${GIT_TAG}"
-             echo "Docker Image: spring-second-project:${GIT_TAG}"
+            echo "Spring Boot Second Project deployed successfully!"
+            echo "Git Tag: ${GIT_TAG}"
+            echo "Docker Image: spring-second-project:${GIT_TAG}"
         }
 
         failure {
