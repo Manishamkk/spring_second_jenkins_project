@@ -14,13 +14,10 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out source code from GitHub...'
-
                 git branch: 'main',
                     url: 'https://github.com/Manishamkk/spring_second_jenkins_project.git'
             }
         }
-
         stage('Git Tag') {
             steps {
                 echo "Creating Git tag: ${GIT_TAG}"
