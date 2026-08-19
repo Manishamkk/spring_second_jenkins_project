@@ -8,6 +8,7 @@ pipeline {
 
     environment {
         GIT_TAG = "v1.0.${BUILD_NUMBER}"
+        IMAGE_NAME = "spring-second-project"
     }
 
     stages {
@@ -15,7 +16,7 @@ pipeline {
         stage('Checkout') {
             steps {
 
-                echo 'Checking out source code from GitHub...'
+                echo 'Checking out code from GitHub...'
 
                 git branch: 'main',
                     credentialsId: 'github-token',
@@ -23,14 +24,25 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+
+                echo 'Building Spring Boot project...'
+
+                sh 'mvn clean package -DskipTests'
+
+                echo 'Build completed successfully!'
+            }
+        }
+
         stage('Git Tag') {
             steps {
 
-                echo "Creating Git tag: ${GIT_TAG}"
+                echo "Creating Git Tag: ${GIT_TAG}"
 
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'github-token',
+                        credentialsId: 'github-tokens',
                         usernameVariable: 'GIT_USERNAME',
                         passwordVariable: 'GIT_PASSWORD'
                     )
@@ -38,26 +50,15 @@ pipeline {
 
                     sh '''
                         git config user.name "Manisha Kadam"
-                        git config user.email "your-github-email@example.com"
+                        git config user.email "your-email@gmail.com"
 
-                        git tag -a ${GIT_TAG} -m "Release ${GIT_TAG}"
+                        git tag -a "${GIT_TAG}" -m "Release ${GIT_TAG}"
 
-                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Manishamkk/spring_second_jenkins_project.git ${GIT_TAG}
+                        git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/Manishamkk/spring_second_jenkins_project.git "${GIT_TAG}"
                     '''
                 }
 
-                echo "Git tag ${GIT_TAG} created and pushed successfully!"
-            }
-        }
-
-        stage('Build') {
-            steps {
-
-                echo 'Building Spring Boot application...'
-
-                sh 'mvn clean package -DskipTests'
-
-                echo 'Maven build successful!'
+                echo "Git Tag ${GIT_TAG} created and pushed successfully!"
             }
         }
 
@@ -67,9 +68,8 @@ pipeline {
                 echo 'Building Docker image...'
 
                 sh '''
-                    docker build -t spring-second-project:${GIT_TAG} .
-
-                    docker tag spring-second-project:${GIT_TAG} spring-second-project:latest
+                    docker build -t ${IMAGE_NAME}:${GIT_TAG} .
+                    docker tag ${IMAGE_NAME}:${GIT_TAG} ${IMAGE_NAME}:latest
                 '''
 
                 echo 'Docker image created successfully!'
@@ -83,13 +83,12 @@ pipeline {
 
                 sh '''
                     docker stop spring-second-project || true
-
                     docker rm spring-second-project || true
 
                     docker run -d \
                         -p 4041:4040 \
                         --name spring-second-project \
-                        spring-second-project:${GIT_TAG}
+                        ${IMAGE_NAME}:${GIT_TAG}
                 '''
 
                 echo 'Docker container started successfully!'
@@ -100,13 +99,13 @@ pipeline {
     post {
 
         success {
-            echo 'Spring Boot Second Project deployed successfully!'
+            echo 'Deployment Successful!'
             echo "Git Tag: ${GIT_TAG}"
-            echo "Docker Image: spring-second-project:${GIT_TAG}"
+            echo "Docker Image: ${IMAGE_NAME}:${GIT_TAG}"
         }
 
         failure {
-            echo 'Spring Boot Second Project deployment failed!'
+            echo 'Pipeline Failed!'
         }
     }
 }
